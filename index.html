@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedAI Pro | Klinik Yapay Zekâ Platformu</title>
+    <link rel="stylesheet" href="/frontend/style.css?v=9999">
+</head>
+<body>
+
+<section id="auth-container" class="auth-shell">
+    <aside class="auth-story">
+        <div class="auth-story-inner">
+            <div class="brand-lockup">
+                <div class="brand-mark">M</div>
+                <div>
+                    <strong>MedAI Pro</strong>
+                    <span>Klinik karar destek prototipi</span>
+                </div>
+            </div>
+
+            <div class="auth-copy">
+                <p class="eyebrow">Hastane ve klinikler için demo platform</p>
+                <h1>Röntgen ön analizi, hasta takibi ve klinik raporlama tek ekranda.</h1>
+                <p>
+                    Hasta ve doktor rolleriyle çalışan MedAI Pro; yapay zekâ destekli röntgen ön analizi,
+                    sağlık asistanı, ilaç ve randevu takibi, PDF rapor ve klinik vaka görünümü sunar.
+                </p>
+            </div>
+
+            <div class="clinical-preview" aria-label="Klinik platform özeti">
+                <div class="preview-header">
+                    <span>Klinik Akış</span>
+                    <strong>Canlı Demo</strong>
+                </div>
+                <div class="preview-grid">
+                    <div>
+                        <span class="preview-label">AI Modülü</span>
+                        <strong>EfficientNet-B0</strong>
+                    </div>
+                    <div>
+                        <span class="preview-label">Raporlama</span>
+                        <strong>PDF + Heatmap</strong>
+                    </div>
+                    <div>
+                        <span class="preview-label">Erişim</span>
+                        <strong>Hasta / Doktor</strong>
+                    </div>
+                    <div>
+                        <span class="preview-label">Veri</span>
+                        <strong>SQLite Geçmiş</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="safety-strip">
+                Bu sistem yapay zekâ destekli ön analiz sağlar. Kesin tanı ve tedavi kararı uzman doktor tarafından verilmelidir.
+            </div>
+        </div>
+    </aside>
+
+    <main class="auth-panel">
+        <section id="login-card" class="auth-card">
+            <div class="auth-card-header">
+                <span class="small-pill">Güvenli giriş</span>
+                <h2>MedAI Pro hesabınıza girin</h2>
+                <p>Demo akışı için hasta veya doktor rolüyle hızlı giriş yapabilirsiniz.</p>
+            </div>
+
+            <form id="login-form" class="form-stack">
+                <div class="field-group">
+                    <label for="login-username">Kullanıcı adı</label>
+                    <input id="login-username" name="username" type="text" autocomplete="username" placeholder="demo_patient" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="login-password">Şifre</label>
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Şifrenizi girin" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Giriş yap</button>
+            </form>
+
+            <div class="divider"><span>Demo erişim</span></div>
+
+            <div class="demo-actions">
+                <button id="btn-demo-patient" type="button" class="btn btn-secondary">Demo Hasta</button>
+                <button id="btn-demo-doctor" type="button" class="btn btn-secondary">Demo Doktor</button>
+            </div>
+
+            <p class="auth-switch">
+                Hesabınız yok mu?
+                <a href="#" id="link-show-register">Yeni hesap oluştur</a>
+            </p>
+
+            <div id="auth-message" class="inline-message" aria-live="polite"></div>
+        </section>
+
+        <section id="register-card" class="auth-card" hidden>
+            <div class="auth-card-header">
+                <span class="small-pill">Rol bazlı kayıt</span>
+                <h2>Yeni kullanıcı oluştur</h2>
+                <p>Hasta veya doktor rolü seçerek demo hesabı açın.</p>
+            </div>
+
+            <form id="register-form" class="form-stack">
+                <div class="field-group">
+                    <label for="reg-username">Kullanıcı adı</label>
+                    <input id="reg-username" name="username" type="text" autocomplete="username" placeholder="ornek_kullanici" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="reg-email">E-posta</label>
+                    <input id="reg-email" name="email" type="email" autocomplete="email" placeholder="ornek@medai.local" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="reg-password">Şifre</label>
+                    <input id="reg-password" name="password" type="password" autocomplete="new-password" placeholder="En az 4 karakter" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="reg-role">Sistem rolü</label>
+                    <select id="reg-role" name="role">
+                        <option value="patient">Hasta</option>
+                        <option value="doctor">Doktor</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Kaydı tamamla</button>
+            </form>
+
+            <p class="auth-switch">
+                Zaten hesabınız var mı?
+                <a href="#" id="link-show-login">Giriş yap</a>
+            </p>
+        </section>
+    </main>
+</section>
+
+<div id="app-container" class="app-shell" style="display:none;">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="brand-lockup compact">
+                <div class="brand-mark">M</div>
+                <div>
+                    <strong>MedAI Pro</strong>
+                    <span id="product-role-label">Klinik platform</span>
+                </div>
+            </div>
+            <div id="engine-status" class="engine-status-badge">
+                <span class="engine-status-dot"></span>
+                <span id="engine-status-text">AI ENGINE: CONNECTING...</span>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="session-card">
+                <div id="user-avatar-initials" class="avatar">MP</div>
+                <div>
+                    <strong id="user-display-name">Kullanıcı</strong>
+                    <span id="user-display-role">Rol</span>
+                </div>
+            </div>
+            <button id="btn-logout" type="button" class="btn btn-ghost">Çıkış</button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <aside class="sidebar">
+            <div class="sidebar-label">Modüller</div>
+            <nav id="nav-links-container" class="nav-list" aria-label="MedAI Pro modülleri"></nav>
+        </aside>
+
+        <main class="content-area">
+            <section id="view-patient-dashboard" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Hasta paneli</p>
+                        <h1 id="patient-welcome-title">Sağlık özetiniz</h1>
+                        <p>Röntgen ön analizleri, ilaçlar, randevular ve raporlar tek hasta çalışma alanında izlenir.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-nav-target="view-xray-analysis">Röntgen analizi başlat</button>
+                </div>
+
+                <div class="stat-grid four">
+                    <article class="stat-card">
+                        <span>Analizlerim</span>
+                        <strong id="patient-stat-total">0</strong>
+                        <small>Kişisel kayıt</small>
+                    </article>
+                    <article class="stat-card danger">
+                        <span>Takip gereken</span>
+                        <strong id="patient-stat-risk">0</strong>
+                        <small>Riskli veya belirsiz</small>
+                    </article>
+                    <article class="stat-card success">
+                        <span>Düşük risk</span>
+                        <strong id="patient-stat-normal">0</strong>
+                        <small>Kırık bulgusu düşük</small>
+                    </article>
+                    <article class="stat-card">
+                        <span>Rapor</span>
+                        <strong id="patient-stat-reports">0</strong>
+                        <small>PDF çıktısı</small>
+                    </article>
+                </div>
+
+                <div class="dashboard-grid">
+                    <article class="panel-card summary-card">
+                        <div class="panel-card-header">
+                            <div>
+                                <h2>Son analiz özeti</h2>
+                                <p>En güncel AI ön analiz sonucunuz burada gösterilir.</p>
+                            </div>
+                        </div>
+                        <div id="patient-last-analysis" class="summary-content"></div>
+                    </article>
+
+                    <article class="panel-card summary-card">
+                        <div class="panel-card-header">
+                            <div>
+                                <h2>Bugünkü ilaçlar</h2>
+                                <p>Yerel olarak kaydettiğiniz ilaç saatleri.</p>
+                            </div>
+                        </div>
+                        <div id="patient-today-meds" class="summary-content"></div>
+                    </article>
+
+                    <article class="panel-card summary-card">
+                        <div class="panel-card-header">
+                            <div>
+                                <h2>Yaklaşan randevu</h2>
+                                <p>Takip ve kontrol planınız.</p>
+                            </div>
+                        </div>
+                        <div id="patient-next-appointment" class="summary-content"></div>
+                    </article>
+
+                    <article class="panel-card summary-card">
+                        <div class="panel-card-header">
+                            <div>
+                                <h2>Hızlı işlemler</h2>
+                                <p>Sunum akışında en sık kullanılan modüller.</p>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button type="button" class="btn btn-secondary" data-nav-target="view-xray-analysis">Röntgen yükle</button>
+                            <button type="button" class="btn btn-secondary" data-nav-target="view-health-assistant">Asistana sor</button>
+                            <button type="button" class="btn btn-secondary" data-nav-target="view-medication-tracker">İlaç ekle</button>
+                            <button type="button" class="btn btn-secondary" data-nav-target="view-appointment-tracker">Randevu ekle</button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="view-doctor-dashboard" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Doktor paneli</p>
+                        <h1>Klinik özet</h1>
+                        <p>Tüm hasta analizleri, risk dağılımı ve son vakalar tek ekranda izlenir.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-nav-target="view-xray-analysis">Yeni analiz</button>
+                </div>
+
+                <div class="stat-grid four">
+                    <article class="stat-card">
+                        <span>Toplam analiz</span>
+                        <strong id="doc-stat-total">0</strong>
+                        <small>Klinikte kayıtlı işlem</small>
+                    </article>
+                    <article class="stat-card danger">
+                        <span>Riskli vaka</span>
+                        <strong id="doc-stat-risk">0</strong>
+                        <small>Orta, yüksek veya belirsiz</small>
+                    </article>
+                    <article class="stat-card success">
+                        <span>Normal vaka</span>
+                        <strong id="doc-stat-normal">0</strong>
+                        <small>Düşük riskli analiz</small>
+                    </article>
+                    <article class="stat-card">
+                        <span>PDF rapor</span>
+                        <strong id="doc-stat-reports">0</strong>
+                        <small>Oluşturulan rapor</small>
+                    </article>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2>Son riskli vakalar</h2>
+                            <p>Doktor kontrolü gerektiren veya belirsiz sonuçlar önceliklendirilir.</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Hasta</th>
+                                <th>Tarih</th>
+                                <th>Sonuç</th>
+                                <th>Güven</th>
+                                <th>Risk</th>
+                                <th>Rapor</th>
+                            </tr>
+                            </thead>
+                            <tbody id="doctor-recent-risk-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-doctor-all-analyses" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Klinik kayıt</p>
+                        <h1>Tüm hasta analizleri</h1>
+                        <p>Doktor rolü sistemdeki tüm hasta analiz geçmişini görebilir.</p>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Hasta</th>
+                                <th>Tarih</th>
+                                <th>AI sonucu</th>
+                                <th>Güven</th>
+                                <th>Risk</th>
+                                <th>Görsel</th>
+                                <th>Heatmap</th>
+                                <th>PDF</th>
+                            </tr>
+                            </thead>
+                            <tbody id="doctor-all-history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-doctor-risk-cases" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Önceliklendirme</p>
+                        <h1>Riskli vakalar</h1>
+                        <p>Yüksek, orta veya belirsiz riskli kayıtlar klinik değerlendirme için ayrılır.</p>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Hasta</th>
+                                <th>Tarih</th>
+                                <th>Sonuç</th>
+                                <th>Güven</th>
+                                <th>Risk</th>
+                                <th>Klinik not</th>
+                                <th>Rapor</th>
+                            </tr>
+                            </thead>
+                            <tbody id="doctor-risk-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-xray-analysis" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Radyoloji ön analiz</p>
+                        <h1>Röntgen analizi</h1>
+                        <p>Görüntüyü yükleyin; model sonucu, güven skoru, risk seviyesi, heatmap ve PDF raporu görüntüleyin.</p>
+                    </div>
+                </div>
+
+                <div class="analysis-grid">
+                    <article class="panel-card upload-card">
+                        <div class="panel-card-header">
+                            <div>
+                                <h2>Görüntü yükleme</h2>
+                                <p>JPG, PNG veya WEBP formatında röntgen dosyası seçin.</p>
+                            </div>
+                        </div>
+
+                        <form id="analysis-upload-form">
+                            <div id="dropzone-area" class="dropzone" role="button" tabindex="0">
+                                <input id="xray-file-input" type="file" accept="image/*" hidden>
+                                <div class="dropzone-icon">XR</div>
+                                <strong>Dosyayı sürükleyin veya seçin</strong>
+                                <span>Hasta röntgen görüntüsü güvenli şekilde analiz modülüne gönderilir.</span>
+                            </div>
+
+                            <div id="file-selected-badge" class="selected-file" hidden>
+                                <span id="selected-file-name"></span>
+                                <button id="btn-clear-file" type="button" class="btn btn-ghost small">Kaldır</button>
+                            </div>
+
+                            <button id="btn-submit-analysis" type="submit" class="btn btn-primary btn-block" disabled>
+                                Analizi başlat
+                            </button>
+                        </form>
+
+                        <div class="clinical-warning">
+                            Bu sistem yapay zekâ destekli ön analiz sağlar. Kesin tanı ve tedavi kararı uzman doktor tarafından verilmelidir.
+                        </div>
+                    </article>
+
+                    <article class="panel-card result-card">
+                        <div class="panel-card-header">
+                            <div>
+                                <h2>AI sonucu</h2>
+                                <p>Sonuçlar model güveniyle birlikte yorumlanmalı, kesin tanı olarak kullanılmamalıdır.</p>
+                            </div>
+                        </div>
+
+                        <div id="analysis-placeholder" class="empty-state">
+                            <div class="empty-icon">AI</div>
+                            <h3>Analiz bekleniyor</h3>
+                            <p>Röntgen yüklendiğinde klinik ön analiz sonucu burada oluşur.</p>
+                        </div>
+
+                        <div id="analysis-loading" class="loading-state" hidden>
+                            <div class="spinner"></div>
+                            <strong>Görüntü analiz ediliyor</strong>
+                            <span>Model sonucu ve rapor bağlantıları hazırlanıyor.</span>
+                        </div>
+
+                        <div id="analysis-result-content" class="analysis-result" hidden>
+                            <div class="result-summary">
+                                <span id="result-risk" class="risk-pill neutral">Risk</span>
+                                <h3 id="result-prediction-text">Sonuç</h3>
+                                <p id="result-medical-note"></p>
+                            </div>
+
+                            <div class="metric-block">
+                                <div class="metric-line">
+                                    <span>Model güven skoru</span>
+                                    <strong id="result-confidence">0%</strong>
+                                </div>
+                                <div class="progress">
+                                    <div id="result-progress-fill"></div>
+                                </div>
+                            </div>
+
+                            <div class="probability-grid">
+                                <div>
+                                    <span>Kırık olasılığı</span>
+                                    <strong id="result-prob-fracture">0%</strong>
+                                </div>
+                                <div>
+                                    <span>Normal olasılığı</span>
+                                    <strong id="result-prob-normal">0%</strong>
+                                </div>
+                            </div>
+
+                            <div class="image-compare">
+                                <figure>
+                                    <figcaption>Orijinal Röntgen Görüntüsü</figcaption>
+                                    <div class="viewport-wrapper">
+                                        <img id="img-output-original" class="viewport-image" alt="Orijinal röntgen görüntüsü">
+                                        <div class="viewport-toolbar" data-viewer="original">
+                                            <button type="button" class="toolbar-btn" data-action="zoom-in" title="Yakınlaştır">
+                                                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="zoom-out" title="Uzaklaştır">
+                                                <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="invert" title="Negatif Görünüm (Renkleri Ters Çevir)">
+                                                <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="contrast" title="Kontrast Arttır">
+                                                <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 18a6 6 0 1 0 0-12v12z" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="reset" title="Sıfırla">
+                                                <svg viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 1 1 21.27 8H18" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </figure>
+                                <figure>
+                                    <figcaption>AI Yoğunluk Haritası (Heatmap)</figcaption>
+                                    <div class="viewport-wrapper">
+                                        <img id="img-output-heatmap" class="viewport-image" alt="AI heatmap görüntüsü">
+                                        <div class="viewport-toolbar" data-viewer="heatmap">
+                                            <button type="button" class="toolbar-btn" data-action="zoom-in" title="Yakınlaştır">
+                                                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="zoom-out" title="Uzaklaştır">
+                                                <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="invert" title="Negatif Görünüm (Renkleri Ters Çevir)">
+                                                <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="contrast" title="Kontrast Arttır">
+                                                <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 18a6 6 0 1 0 0-12v12z" /></svg>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" data-action="reset" title="Sıfırla">
+                                                <svg viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 1 1 21.27 8H18" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </figure>
+                            </div>
+
+                            <div class="result-actions">
+                                <a id="btn-download-pdf" class="btn btn-secondary" href="#" target="_blank" rel="noopener">PDF raporu aç</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="view-health-assistant" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Bilgilendirme asistanı</p>
+                        <h1>Sağlık asistanı</h1>
+                        <p>Belirti sorularına güvenli, teşhis koymayan ve acil uyarı içeren yanıtlar üretir.</p>
+                    </div>
+                </div>
+
+                <div class="assistant-layout">
+                    <div class="panel-card chat-card">
+                        <div id="chat-messages-container" class="chat-messages">
+                            <article class="assistant-message">
+                                <div class="message-avatar">AI</div>
+                                <div class="message-body">
+                                    <h3>MedAI klinik asistan</h3>
+                                    <p>Belirtinizi yazın. Acil bulgularda 112 veya en yakın acil servis tercih edilmelidir.</p>
+                                    <div class="assistant-cards">
+                                        <div>
+                                            <span>Güvenlik uyarısı</span>
+                                            <p>Bu asistan teşhis koymaz, ilaç önermez ve reçete yazmaz.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                            <article id="assistant-typing" class="assistant-message typing-message" hidden>
+                                <div class="message-avatar">AI</div>
+                                <div class="message-body">
+                                    <div class="typing-dots" aria-label="Yanıt hazırlanıyor">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+
+                        <form id="chat-input-form" class="chat-input">
+                            <input id="chat-query-input" type="text" placeholder="Örn: Kolum düştükten sonra şişti ve çok ağrıyor" autocomplete="off">
+                            <button id="assistant-submit" type="submit" class="btn btn-primary">Gönder</button>
+                        </form>
+                    </div>
+
+                    <aside class="assistant-side">
+                        <div class="panel-card">
+                            <h2>Asistan sınırları</h2>
+                            <ul class="clean-list">
+                                <li>Teşhis koymaz.</li>
+                                <li>İlaç veya reçete önermez.</li>
+                                <li>Acil belirtilerde 112/acil servis uyarısı verir.</li>
+                                <li>Doktor değerlendirmesinin yerine geçmez.</li>
+                            </ul>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <section id="view-medication-tracker" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Hasta takibi</p>
+                        <h1>İlaç takibi</h1>
+                        <p>Kişisel ilaç adı, doz, saat ve kısa not bilgileri tarayıcıda saklanır.</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <article class="panel-card">
+                        <div class="panel-card-header">
+                            <h2>Yeni ilaç</h2>
+                        </div>
+                        <form id="medication-form" class="form-stack">
+                            <div class="field-group">
+                                <label for="med-name">İlaç adı</label>
+                                <input id="med-name" type="text" placeholder="Örn: Doktorun yazdığı ilaç" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="med-dosage">Doz</label>
+                                <input id="med-dosage" type="text" placeholder="Örn: 500 mg" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="med-time">Saat</label>
+                                <input id="med-time" type="time" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="med-note">Not</label>
+                                <input id="med-note" type="text" placeholder="Tok/ aç, doktor notu vb.">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">İlaç ekle</button>
+                        </form>
+                    </article>
+
+                    <article class="panel-card">
+                        <div class="panel-card-header">
+                            <h2>İlaç listesi</h2>
+                        </div>
+                        <div id="medication-list" class="stack-list"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="view-appointment-tracker" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Hasta takibi</p>
+                        <h1>Randevu takibi</h1>
+                        <p>Kontrol, tetkik ve takip randevularınızı düzenli şekilde kaydedin.</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <article class="panel-card">
+                        <div class="panel-card-header">
+                            <h2>Yeni randevu</h2>
+                        </div>
+                        <form id="appointment-form" class="form-stack">
+                            <div class="field-group">
+                                <label for="app-title">Başlık</label>
+                                <input id="app-title" type="text" placeholder="Örn: Ortopedi kontrol" required>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="app-date">Tarih</label>
+                                    <input id="app-date" type="date" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="app-time">Saat</label>
+                                    <input id="app-time" type="time">
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <label for="app-note">Not</label>
+                                <input id="app-note" type="text" placeholder="Hastane, doktor, tetkik vb.">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Randevu ekle</button>
+                        </form>
+                    </article>
+
+                    <article class="panel-card">
+                        <div class="panel-card-header">
+                            <h2>Randevu listesi</h2>
+                        </div>
+                        <div id="appointment-list" class="stack-list"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="view-patient-history" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Kişisel kayıt</p>
+                        <h1>Analiz geçmişim</h1>
+                        <p>Hasta rolü sadece kendi röntgen analiz kayıtlarını görüntüler.</p>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Sonuç</th>
+                                <th>Güven</th>
+                                <th>Risk</th>
+                                <th>Görsel</th>
+                                <th>PDF</th>
+                            </tr>
+                            </thead>
+                            <tbody id="patient-history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-patient-reports" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Rapor arşivi</p>
+                        <h1>Raporlarım</h1>
+                        <p>Size ait PDF raporlar ve heatmap bağlantıları burada listelenir.</p>
+                    </div>
+                </div>
+
+                <div id="patient-report-list" class="report-grid"></div>
+            </section>
+
+            <section id="view-doctor-reports" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Klinik arşiv</p>
+                        <h1>Hasta raporları</h1>
+                        <p>Tüm hasta raporları, görseller ve heatmap çıktıları doktor panelinden açılabilir.</p>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Hasta</th>
+                                <th>Tarih</th>
+                                <th>Risk</th>
+                                <th>Görsel</th>
+                                <th>Heatmap</th>
+                                <th>PDF</th>
+                            </tr>
+                            </thead>
+                            <tbody id="doctor-report-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-doctor-notes" class="content-panel" hidden>
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">Klinik çalışma alanı</p>
+                        <h1>Doktor not alanı</h1>
+                        <p>Demo sunumunda vaka değerlendirme notlarını yerel olarak kaydedebilirsiniz.</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <article class="panel-card">
+                        <div class="panel-card-header">
+                            <h2>Yeni klinik not</h2>
+                        </div>
+                        <form id="doctor-note-form" class="form-stack">
+                            <div class="field-group">
+                                <label for="note-patient">Hasta / vaka</label>
+                                <input id="note-patient" type="text" placeholder="Örn: Demo Hasta - sol el grafisi" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="note-body">Not</label>
+                                <textarea id="note-body" rows="7" placeholder="Klinik değerlendirme, takip planı veya sunum notu" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Notu kaydet</button>
+                        </form>
+                    </article>
+
+                    <article class="panel-card">
+                        <div class="panel-card-header">
+                            <h2>Kayıtlı notlar</h2>
+                        </div>
+                        <div id="doctor-notes-list" class="stack-list"></div>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+<script src="/frontend/script.js?v=9999"></script>
+</body>
+</html>
